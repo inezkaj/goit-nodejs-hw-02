@@ -1,34 +1,27 @@
-const fs = require("fs/promises");
-const path = require("path");
-const { nanoid } = require("nanoid");
-const contactsPath = path.join(__dirname, "./contacts.json");
+const Contact = require("./contact.js");
 
 const listContacts = async () => {
-  const contacts = await fs.readFile(contactsPath, "utf8");
-  return JSON.parse(contacts);
+  return Contact.find();
 };
 
-const getContactById = async (contactId) => {
-  const contacts = listContacts();
-  return contacts.find((contact) => contact.id === contactId);
+const getContactById = async (id) => {
+  return Contact.findOne({ _id: id });
 };
 
-const removeContact = async (contactId) => {
-  const contacts = await listContacts();
-  return contacts.find((contact) => contact.id === contactId);
+const removeContact = async (id) => {
+  return Contact.findByIdAndDelete({ _id: id });
 };
 
-const addContact = async (body) => {
-  const contacts = await listContacts();
-  const newContact = { id: nanoid(), ...body };
-  contacts.push(newContact);
-  return newContact;
+const addContact = async ({ name, email, phone, favorite }) => {
+  return Contact.create({ name, email, phone, favorite });
 };
 
-const updateContact = async (contactId, body) => {
-  const contacts = await listContacts();
-  const index = contacts.findIndex((contact) => contact.id === contactId);
-  if (index !== -1) return (contacts[index] = { ...contacts[index], ...body });
+const updateContact = async (id, body) => {
+  return Contact.findByIdAndUpdate(id, { body }, { new: true });
+};
+
+const updateStatusContact = async (id, favorite) => {
+  return Contact.findByIdAndUpdate(id, { favorite: !!favorite }, { new: true });
 };
 
 module.exports = {
@@ -37,4 +30,5 @@ module.exports = {
   removeContact,
   addContact,
   updateContact,
+  updateStatusContact,
 };
