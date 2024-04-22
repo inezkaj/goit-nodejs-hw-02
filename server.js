@@ -3,12 +3,11 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 
-require("dotenv").config();
 app.use(express.json());
 app.use(cors());
+require("dotenv").config();
 
-const uriDb =
-  "mongodb+srv://inezkajed:Piotrek84@cluster0.rosy69j.mongodb.net/db-contacts?retryWrites=true&w=majority&appName=Cluster0";
+const { DB_HOST: uriDb } = process.env;
 
 const connection = mongoose.connect(uriDb, {
   useNewUrlParser: true,

@@ -1,6 +1,8 @@
 const express = require("express");
-const Contact = require("../../models/contact.js");
-// const Joi = require("@hapi/joi");
+const User = require("../../models/user.js");
+const router = express.Router();
+require("dotenv").config();
+
 const {
   listContacts,
   getContactById,
@@ -9,8 +11,6 @@ const {
   updateContact,
   updateStatusContact,
 } = require("../../models/contacts");
-
-const router = express.Router();
 
 router.get("/", async (req, res, next) => {
   try {
@@ -36,7 +36,7 @@ router.get("/:contactId", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const validatedBody = Contact.validate(req.body);
+    const validatedBody = User.validate(req.body);
     if (validatedBody.error) {
       res.status(400).json({
         message: `missing required ${validatedBody.error.details[0].path} - field`,
