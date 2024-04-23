@@ -1,27 +1,27 @@
-const Contact = require("./contact.js");
+const User = require("./user.js");
 
 const listContacts = async () => {
-  return Contact.find();
+  return User.find();
 };
 
 const getContactById = async (id) => {
-  return Contact.findOne({ _id: id });
+  return User.findOne({ _id: id });
 };
 
 const removeContact = async (id) => {
-  return Contact.findByIdAndDelete({ _id: id });
+  return User.findByIdAndDelete({ _id: id });
 };
 
 const addContact = async ({ name, email, phone, favorite }) => {
-  return Contact.create({ name, email, phone, favorite });
+  return User.create({ name, email, phone, favorite });
 };
 
 const updateContact = async (id, body) => {
-  return Contact.findByIdAndUpdate(id, { body }, { new: true });
+  return User.findByIdAndUpdate(id, { body }, { new: true });
 };
 
 const updateStatusContact = async (id, favorite) => {
-  return Contact.findByIdAndUpdate(id, { favorite: !!favorite }, { new: true });
+  return User.findByIdAndUpdate(id, { favorite: !!favorite }, { new: true });
 };
 
 module.exports = {
