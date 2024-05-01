@@ -147,7 +147,6 @@ const mimetypeWhiteList = ["image/png", "image/jpg", "image/jpeg", "image/gif"];
 const uploadMiddleware = multer({
   storage,
   fileFilter: async (req, file, cb) => {
-    console.log(file);
     const extension = path.extname(file.originalname).toLowerCase();
     const mimetype = file.mimetype;
     if (
