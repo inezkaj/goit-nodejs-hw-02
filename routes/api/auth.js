@@ -147,6 +147,7 @@ const mimetypeWhiteList = ["image/png", "image/jpg", "image/jpeg", "image/gif"];
 const uploadMiddleware = multer({
   storage,
   fileFilter: async (req, file, cb) => {
+    console.log(file);
     const extension = path.extname(file.originalname).toLowerCase();
     const mimetype = file.mimetype;
     if (
@@ -168,19 +169,17 @@ router.patch(
       if (req.file) {
         console.log(req.file);
 
-        Jimp.read(req.file.path, (err, avatar) => {
-          if (err) throw err;
-
+        Jimp.read(req.file.path).then((avatar) => {
           avatar.resize(250, 250);
 
           const extension = path.extname(req.file.path);
           const fileName = `${uuidV4()}${extension}`;
           const imagePath = path.join(storeImageDir, fileName);
 
-          avatar.write(imagePath, async (err) => {
-            if (err) throw err;
-
+          avatar.writeAsync(imagePath).then(async () => {
             const avatarURL = req.user.updateAvatarFromFile(fileName);
+            await req.user.save();
+
             if (avatarURL) {
               await fs.unlink(req.file.path);
               res.json({ avatarURL: avatarURL });
