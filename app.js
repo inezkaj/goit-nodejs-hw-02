@@ -2,6 +2,7 @@ const express = require("express");
 const logger = require("morgan");
 const cors = require("cors");
 
+const path = require("path");
 const routerAuth = require("./routes/api/auth");
 const app = express();
 
@@ -10,6 +11,9 @@ app.use(cors());
 
 const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 app.use(logger(formatsLogger));
+
+app.set("view engine", "ejs");
+app.use(express.static(path.resolve(__dirname, "./public")));
 
 app.use("/users", routerAuth);
 
