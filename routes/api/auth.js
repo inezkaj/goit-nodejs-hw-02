@@ -6,6 +6,7 @@ const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 const jwt = require("jsonwebtoken");
 const passport = require("passport");
+const ejs = require("ejs");
 
 const path = require("path");
 const multer = require("multer");
@@ -50,7 +51,6 @@ const auth = (req, res, next) => {
 };
 
 router.post("/signup", async (req, res, next) => {
-  console.log(req.body);
   const { email, password } = req.body;
   const user = await User.findOne({ email });
   if (user) {
@@ -65,13 +65,89 @@ router.post("/signup", async (req, res, next) => {
     const newUser = new User({ email });
     newUser.setPassword(password);
     newUser.setAvatarByEmail();
+    newUser.setVerificationToken();
     await newUser.save();
-    res.status(201).json({
+
+    newUser.sendVerificationEmail().then(() => {
+      res.status(201).json({
+        status: "success",
+        code: 201,
+        data: {
+          message: "Registration successful",
+        },
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+});
+
+router.post("/verify", async (req, res, next) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({
+      status: "error",
+      code: 400,
+      message: "missing required field email",
+    });
+  }
+
+  console.log(email);
+
+  const user = await User.findOne({ email: email });
+  if (user.verify === true) {
+    return res.status(400).json({
+      status: "error",
+      code: 400,
+      message: "Verification has already been passed",
+    });
+  }
+
+  try {
+    user.setVerificationToken();
+    await user.save();
+
+    user.sendVerificationEmail().then(() => {
+      res.status(200).json({
+        status: "success",
+        code: 200,
+        data: {
+          message: "Verification email sent",
+        },
+      });
+    });
+  } catch (error) {
+    return res.status(400).json({
+      status: "error",
+      code: 400,
+      message: error,
+    });
+  }
+});
+
+router.get("/verify/:verificationToken", async (req, res, next) => {
+  const { verificationToken } = req.params;
+
+  try {
+    const user = await User.findOneAndUpdate(
+      { verificationToken: verificationToken },
+      { verificationToken: null, verify: true },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        status: "Not found",
+        code: 404,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
       status: "success",
-      code: 201,
-      data: {
-        message: "Registration successful",
-      },
+      code: 200,
+      message: "Verification successful",
     });
   } catch (error) {
     console.log(error);
@@ -81,7 +157,7 @@ router.post("/signup", async (req, res, next) => {
 
 router.post("/login", async (req, res, next) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: email, verify: true });
 
   if (!user || !user.validPassword(password)) {
     return res.status(400).json({
